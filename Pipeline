@@ -1,0 +1,109 @@
+pipeline {
+    agent any
+    
+    triggers {
+        githubPush()
+    }
+    
+    stages {
+        stage('Build') {
+            steps {
+                echo 'Building the code with Maven...'
+                bat 'mvn clean package'
+            }
+            post {
+                success {
+                    mail to: 'ajayofficial1998@gmail.com',
+                         subject: 'Build Successful',
+                         body: 'The build executed successfully...!'
+                }
+                failure {
+                    mail to: 'ajayofficial1998@gmail.com',
+                         subject: 'Build failed',
+                         body: 'The build execution failed...!'
+                }
+            }
+        }
+        
+        stage('Unit Test and Integration Test') {
+            steps {
+                echo 'Execute the Unit Test...!'
+                echo 'Unit test using Cucumber'
+
+                echo 'Execute the Integration Test...!'
+                echo 'Integration test using Robot Framework'       
+            }
+            post {
+                success {
+                    mail to: 'ajayofficial1998@gmail.com',
+                         subject: 'Unit Test and Integration Test Successful',
+                         body: 'The tests executed successfully...!'
+                }
+                failure {
+                    mail to: 'ajayofficial1998@gmail.com',
+                         subject: 'Tests failed',
+                         body: 'The test execution failed...!'
+                }
+            }
+        }
+        
+        stage('Code Analysis') {
+            steps {
+                echo 'Integrate SonarQube Analysis...!'
+                echo 'Analyzing the code using SonarQube'
+            }
+        }
+        
+        stage('Security Scan') {
+            steps {
+                echo 'Perform Security Scan...!'  
+                echo 'Security Scanning using SonarQube'
+            }
+            post {
+                success {
+                    mail to: 'ajayofficial1998@gmail.com',
+                         subject: 'Security Scan Successful',
+                         body: 'The security scan executed successfully...!'
+                }
+                failure {
+                    mail to: 'ajayofficial1998@gmail.com',
+                         subject: 'Security Scan failed',
+                         body: 'The security scan execution failed...!'
+                }
+            }
+        }
+        
+        stage('Deploy to Staging') {
+            steps {
+                echo 'Deploy to the staging using AWS EC2 instance...!' 
+                echo 'Deploying it to the staging server'
+            }
+        }
+        
+        stage('Integration Tests on Staging') {
+            steps {
+                echo 'Run the Integration Test on Staging server...!'
+                echo 'Staging of integration test using Postman'
+            }
+        }
+        
+        stage('Deploy to Production') {
+            steps {
+                echo 'Application deployment to the Production environment...!'
+                echo 'Application Deployment using AWS EC2 instance'
+            }
+        }
+    }
+    
+    post {
+        always {
+            echo 'Sending Email Notification'
+            emailext(
+                subject: 'Pipeline Status: ${currentBuild.result}',
+                body: 'The pipeline execution resulted in ${currentBuild.result}.',
+                to: 'ajayofficial1998@gmail.com',
+                attachLog: true
+            )
+        }
+    }
+}
